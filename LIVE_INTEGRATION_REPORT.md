@@ -1,8 +1,8 @@
 # ArtSync — Live Integration Report
 
-Aggiornato: 2026-11-06
+Aggiornato: 2026-11-06 (post test inventario LIVE)
 
-## Collegamento effettuato
+## Ambiente
 
 | Voce | Valore (senza segreti) |
 |---|---|
@@ -10,74 +10,107 @@ Aggiornato: 2026-11-06
 | App | ArtSync |
 | Client ID | `439097399ccb740773a262bc32003600` |
 | Development store | `artsync-demo.myshopify.com` (ArtSync Demo) |
-| Production stores | nessuno in org (verificato) |
-| Scope | `read_products,read_inventory,write_inventory,read_locations` |
-| API version (app code) | 2026-10 |
-| `shopify app dev` | **RUNNING** |
-| Tunnel | Cloudflare (trycloudflare) attivo |
-| Preview URL | `https://admin.shopify.com/store/artsync-demo/apps/439097399ccb740773a262bc32003600?dev-console=show` |
+| Production stores | nessuno in org |
+| Scope | `read_products,write_products,read_inventory,write_inventory,read_locations` |
+| API version | **2026-10** |
+| Location | `Shop location` · `gid://shopify/Location/127857033550` |
 
-Backup locali: `shopify.app.toml.backup-pre-link`, `package.json.backup-pre-link`.
+`write_products` è stato aggiunto solo per creare il prodotto di prova nello store vuoto.
+
+---
 
 ## Criteri di completamento
 
-| Criterio | Stato |
-|---|---|
-| ArtSync collegata a una vera app Shopify | **PASS** |
-| Installata su development store | **PASS** (scope auto-granted via CLI; install UI richiede login Admin nel browser) |
-| Autenticazione funziona | **PASS** (CLI + Admin API execute) |
-| Dashboard si apre dal pannello Shopify | **NOT TESTED** (serve login Admin nel browser — Captcha) |
-| Prodotti letti via GraphQL | **PASS** (query OK; store ha **0 prodotti**) |
-| Location recuperate | **PASS** (`Shop location` · `gid://shopify/Location/127857033550`) |
-| Mapping SKU funziona | **NOT TESTED** (nessun prodotto nello store) |
-| Evento fornitore LIVE | **NOT TESTED** |
-| Shopify aggiorna giacenza | **NOT TESTED** (nessuna mutazione eseguita — in attesa autorizzazione) |
-| Quantità riletta | **NOT TESTED** |
-| Log | **NOT TESTED** (LIVE) |
-| Test automatici | **PASS** (15/15) |
-| Test LIVE E2E | **NOT TESTED** |
-| Documentazione | **PASS** (questo file) |
+| Criterio | Stato | Note |
+|---|---|---|
+| ArtSync collegata a una vera app Shopify | **PASS** | config link + `shopify app dev` |
+| Installata su development store | **PASS** | scope auto-granted via CLI |
+| Autenticazione Admin API | **PASS** | `shopify app execute` |
+| Dashboard embedded da Shopify Admin | **NOT TESTED** | login Admin richiede Captcha/browser utente |
+| Lettura prodotti via GraphQL | **PASS** | store popolato con prodotto di prova |
+| Location recuperate | **PASS** | Shop location attiva |
+| Mapping SKU in dashboard ArtSync | **NOT TESTED** | richiede UI embedded / import dalla dashboard |
+| Evento fornitore HMAC end-to-end LIVE | **NOT TESTED** | test sotto usa Admin GraphQL diretto |
+| Shopify aggiorna giacenza ART-001 5→2 | **PASS** | `inventorySetQuantities` + CAS + `@idempotent` |
+| Quantità riletta indipendentemente | **PASS** | query `inventoryItem` → available **2** |
+| Log dashboard LIVE | **NOT TESTED** | UI embedded non aperta |
+| Test automatici MOCK | **PASS** | 15/15 |
+| Typecheck / build | **PASS** | eseguiti dopo il test LIVE |
+| Test LIVE E2E via API fornitore HMAC | **NOT TESTED** | vedi sotto |
 
-## Verifica GraphQL reale eseguita
+---
 
-Query read-only su `artsync-demo.myshopify.com` via `shopify app execute`:
+## Test LIVE inventario (eseguito)
+
+### Setup prodotto di prova
+
+Creato via Admin GraphQL sul development store:
+
+- Titolo: `Limited Edition Abstract 01`
+- Product: `gid://shopify/Product/16234468901198`
+- Variant: `gid://shopify/ProductVariant/61565092626766`
+- SKU: `ART-001`
+- InventoryItem: `gid://shopify/InventoryItem/60016911614286`
+- Location: `gid://shopify/Location/127857033550`
+
+### Baseline
+
+1. `inventorySetQuantities` → quantity **5**, `changeFromQuantity: 0`, `@idempotent`
+2. Lettura indipendente: `available = 5` — **PASS**
+
+### Azione richiesta (5 → 2)
 
 ```graphql
-{ shop { name myshopifyDomain } products(first: 3) { nodes { id title } } }
+mutation inventorySetQuantities($input: InventorySetQuantitiesInput!, $idempotencyKey: String!) {
+  inventorySetQuantities(input: $input) @idempotent(key: $idempotencyKey) {
+    inventoryAdjustmentGroup { reason changes { name delta quantityAfterChange } }
+    userErrors { code field message }
+  }
+}
 ```
 
-Risultato reale:
+Variabili rilevanti:
 
-- `shop.name` = `ArtSync Demo`
-- `shop.myshopifyDomain` = `artsync-demo.myshopify.com`
-- `products.nodes` = `[]` (store vuoto)
+- `quantity: 2`
+- `changeFromQuantity: 5`
+- `idempotencyKey: artsync:artsync-demo.myshopify.com:evt-live-art001-5to2`
+- `referenceDocumentUri: gid://artsync/InventorySyncEvent/evt-live-art001-5to2`
 
-Locations (query reale dopo aggiunta `read_locations`):
+Risultato mutation:
 
-- `Shop location` — `gid://shopify/Location/127857033550` — active
+- `userErrors: []`
+- change `available` delta **-3** — **PASS**
 
-**Nessuna mutation di inventario è stata eseguita.**
+### Verifica indipendente
 
-## Problemi rimasti / prossimi passi
+Query successiva (non la response della mutation):
 
-1. **Login Admin Shopify nel browser** per aprire la dashboard embedded (Captcha impedisce automazione).
-2. **Creare nel development store** il prodotto di prova:
-   - Titolo: `Limited Edition Abstract 01`
-   - SKU: `ART-001`
-   - Quantità disponibile: `5` sulla location `Shop location`
-3. In ArtSync → Prodotti → **Importa prodotti da Shopify** (fornitore Atelier Milano, solo SKU `ART-001`).
-4. Solo dopo tua autorizzazione: simulare aggiornamento fornitore 5 → 2 e verificare in Admin.
+```graphql
+query {
+  inventoryItem(id: "gid://shopify/InventoryItem/60016911614286") {
+    sku
+    inventoryLevel(locationId: "gid://shopify/Location/127857033550") {
+      quantities(names: ["available"]) { name quantity }
+    }
+  }
+}
+```
 
-## Fix applicati durante il collegamento
+Risultato reale: `sku = ART-001`, `available = 2` — **PASS**
 
-- Shopify CLI installato (`5.0.1`)
-- App remota ArtSync creata e linkata al progetto esistente (nessun rewrite del codice app)
-- Scope ripristinati dopo link (il remote defaultava a `write_products`)
-- Aggiunto `shopify.web.toml` (prima c’era solo `.liquid` → tunnel non partiva)
-- `application_url` placeholder `shopify.dev/...` sostituito (rompeva i webhook)
+---
 
-## Limitazioni
+## Cosa resta da verificare con intervento manuale
 
-- Store senza prodotti: import/sync E2E non ancora dimostrabili
-- Mutazioni inventario non eseguite di proposito
-- Dashboard embedded non verificata visualmente (login Admin richiesto)
+1. Aprire nel browser (account Admin dello store):  
+   https://admin.shopify.com/store/artsync-demo/apps/439097399ccb740773a262bc32003600  
+2. Confermare che la dashboard ArtSync embedded si carica.
+3. Opzionale: **Prodotti → Importa da Shopify** + **Demo** per ripetere 5→2 via HMAC API (oggi **NOT TESTED** su quel percorso).
+
+---
+
+## Limitazioni note
+
+- Il test LIVE di inventario è stato eseguito con **Admin GraphQL diretto** (`shopify app execute`), non attraverso il percorso HMAC `POST /api/supplier/inventory-update` in LIVE.
+- Dashboard embedded: **NOT TESTED** (blocco login/Captcha nell’automazione).
+- Nessun token/secret è riportato in questo documento.

@@ -16,7 +16,7 @@ const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY || "artsync-mock-api-key",
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "artsync-mock-api-secret",
   apiVersion: ApiVersion.October26,
-  scopes: (process.env.SCOPES || "read_products,read_inventory,write_inventory,read_locations").split(","),
+  scopes: (process.env.SCOPES || "read_products,write_products,read_inventory,write_inventory,read_locations").split(","),
   appUrl: process.env.SHOPIFY_APP_URL || "http://localhost:3000",
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),

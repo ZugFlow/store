@@ -16,12 +16,12 @@ ArtSync is designed as a **technical demonstration** for art / luxury / B2B inve
 | Automated unit/integration tests (Vitest) | **Verified — 15/15** |
 | Typecheck / production build | **Verified** |
 | App linked to a Shopify Development Store | **Verified** (dev store only) |
-| Admin GraphQL read (shop, products, locations) | **Verified** (read-only) |
-| LIVE inventory mutation (`inventorySetQuantities` on a real SKU) | **Not verified yet** |
-| Embedded dashboard open from Shopify Admin UI | **Not verified yet** (requires merchant Admin login) |
-| End-to-end supplier event updating live stock 5→2 | **Not verified yet** |
+| Admin GraphQL read (shop, products, locations) | **Verified** |
+| LIVE inventory mutation ART-001 `5 → 2` via `inventorySetQuantities` + independent re-read | **Verified** (dev store) |
+| Embedded dashboard open from Shopify Admin UI | **Not verified yet** (requires merchant Admin login / Captcha) |
+| LIVE end-to-end via supplier HMAC API (`POST /api/supplier/inventory-update`) | **Not verified yet** |
 
-Do not treat LIVE inventory sync as proven until the remaining LIVE checks above are completed and documented in [`LIVE_INTEGRATION_REPORT.md`](./LIVE_INTEGRATION_REPORT.md).
+Details: [`LIVE_INTEGRATION_REPORT.md`](./LIVE_INTEGRATION_REPORT.md).
 
 ---
 
