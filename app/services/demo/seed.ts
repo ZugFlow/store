@@ -15,19 +15,19 @@ export function demoSecretFor(externalId: string): string {
 
 const DEMO_SUPPLIERS = [
   {
-    externalId: "supplier-atelier-milano",
-    name: "Atelier Milano",
+    externalId: "supplier-petcare-nord",
+    name: "PetCare Nord",
     products: [
       {
-        sku: "ART-001",
-        title: "Limited Edition Abstract 01",
+        sku: "PET-001",
+        title: "Crocchette Manzo Adult 2kg",
         quantity: 5,
         imageUrl:
           "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_large.png",
       },
       {
-        sku: "ART-004",
-        title: "Milanese Bronze Relief",
+        sku: "PET-004",
+        title: "Guinzaglio Imbottito M",
         quantity: 3,
         imageUrl:
           "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_large.png",
@@ -35,12 +35,12 @@ const DEMO_SUPPLIERS = [
     ],
   },
   {
-    externalId: "supplier-fine-art-london",
-    name: "Fine Art London",
+    externalId: "supplier-happypaws",
+    name: "HappyPaws Distribuzione",
     products: [
       {
-        sku: "ART-002",
-        title: "Contemporary Sculpture 02",
+        sku: "PET-002",
+        title: "Snack Salmone per Gatti 100g",
         quantity: 2,
         imageUrl:
           "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_large.png",
@@ -48,12 +48,12 @@ const DEMO_SUPPLIERS = [
     ],
   },
   {
-    externalId: "supplier-luxury-prints-paris",
-    name: "Luxury Prints Paris",
+    externalId: "supplier-zoodistrib",
+    name: "ZooDistrib Roma",
     products: [
       {
-        sku: "ART-003",
-        title: "Fine Art Print 03",
+        sku: "PET-003",
+        title: "Lettiera Agglomerante 10L",
         quantity: 12,
         imageUrl:
           "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_large.png",
@@ -70,8 +70,18 @@ export type SeedResult = {
 /**
  * Idempotent seed for mock demo data. Safe to re-run.
  */
+const LEGACY_SUPPLIER_IDS = [
+  "supplier-atelier-milano",
+  "supplier-fine-art-london",
+  "supplier-luxury-prints-paris",
+] as const;
+
 export async function seedDemoData(shop = getDemoShop()): Promise<SeedResult> {
   const secrets: SeedResult["suppliers"] = [];
+
+  await prisma.supplier.deleteMany({
+    where: { shop, externalId: { in: [...LEGACY_SUPPLIER_IDS] } },
+  });
 
   for (const def of DEMO_SUPPLIERS) {
     const secret = demoSecretFor(def.externalId);
@@ -172,18 +182,7 @@ export async function seedDemoData(shop = getDemoShop()): Promise<SeedResult> {
 }
 
 export async function ensureDemoSeeded(shop = getDemoShop()) {
-  const count = await prisma.supplier.count({ where: { shop, mode: "mock" } });
-  if (count === 0) {
-    return seedDemoData(shop);
-  }
-  return {
-    shop,
-    suppliers: DEMO_SUPPLIERS.map((s) => ({
-      externalId: s.externalId,
-      name: s.name,
-      secret: demoSecretFor(s.externalId),
-    })),
-  };
+  return seedDemoData(shop);
 }
 
 export { generateSupplierSecret };

@@ -191,9 +191,9 @@ export default function SuppliersPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Nuovo fornitore demo</CardTitle>
+          <CardTitle>Nuovo fornitore</CardTitle>
           <CardDescription>
-            Crea un fornitore di test con secret HMAC monouso.
+            Crea un fornitore e genera il secret HMAC di autenticazione.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -201,14 +201,14 @@ export default function SuppliersPage() {
             <input type="hidden" name="intent" value="create" />
             <div className="grid gap-2">
               <Label htmlFor="name">Nome</Label>
-              <Input id="name" name="name" required placeholder="Atelier Roma" />
+              <Input id="name" name="name" required placeholder="PetCare Nord" />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="externalId">Identificativo (opzionale)</Label>
               <Input
                 id="externalId"
                 name="externalId"
-                placeholder="supplier-atelier-roma"
+                placeholder="supplier-petcare-nord"
               />
             </div>
             <Button type="submit">Crea fornitore</Button>

@@ -1,5 +1,4 @@
 import { NavLink } from "react-router";
-import type { ArtsyncMode } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -9,15 +8,13 @@ const LINKS = [
   { to: "/app/suppliers", label: "Fornitori" },
   { to: "/app/products", label: "Prodotti" },
   { to: "/app/logs", label: "Log" },
-  { to: "/app/demo", label: "Demo" },
+  { to: "/app/demo", label: "Aggiorna stock" },
 ];
 
 export function AppShell({
-  mode,
   shop,
   children,
 }: {
-  mode: ArtsyncMode;
   shop: string;
   children: React.ReactNode;
 }) {
@@ -28,7 +25,7 @@ export function AppShell({
           <div className="min-w-0">
             <div className="text-base font-semibold tracking-tight">ArtSync</div>
             <div className="truncate text-xs text-muted-foreground">
-              Shopify Inventory Bridge · {shop}
+              Inventory sync · {shop}
             </div>
           </div>
 
@@ -49,10 +46,6 @@ export function AppShell({
               </NavLink>
             ))}
           </nav>
-
-          <Badge variant={mode === "mock" ? "secondary" : "default"}>
-            {mode === "mock" ? "MOCK" : "SHOPIFY LIVE"}
-          </Badge>
         </div>
         <Separator />
       </header>

@@ -7,8 +7,8 @@ import { TEST_SHOP, mockClient, resetTestDb } from "./helpers";
 function payload(overrides: Record<string, unknown> = {}) {
   return inventoryUpdateSchema.parse({
     eventId: "evt-10001",
-    supplierId: "supplier-atelier-milano",
-    sku: "ART-001",
+    supplierId: "supplier-petcare-nord",
+    sku: "PET-001",
     quantity: 2,
     timestamp: "2026-11-06T09:00:00.000Z",
     ...overrides,
@@ -64,8 +64,8 @@ describe("syncSupplierInventory (mock)", () => {
   it("5. validation rejects negative quantity", () => {
     const parsed = inventoryUpdateSchema.safeParse({
       eventId: "evt-neg",
-      supplierId: "supplier-atelier-milano",
-      sku: "ART-001",
+      supplierId: "supplier-petcare-nord",
+      sku: "PET-001",
       quantity: -1,
       timestamp: "2026-11-06T09:00:00.000Z",
     });

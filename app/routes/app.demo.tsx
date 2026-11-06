@@ -112,14 +112,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function DemoPage() {
-  const { products, mode, shop } = useLoaderData<typeof loader>();
+  const { products } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Demo fornitore"
-        description={`Simula un evento reale verso POST /api/supplier/inventory-update · modalità ${mode} · ${shop}`}
+        title="Aggiorna stock"
+        description="Invia un aggiornamento inventario dal fornitore a Shopify."
       />
 
       {actionData && (
@@ -137,9 +137,9 @@ export default function DemoPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Simula aggiornamento fornitore</CardTitle>
+          <CardTitle>Nuovo aggiornamento</CardTitle>
           <CardDescription>
-            Genera un evento firmato HMAC e lo invia all&apos;API locale.
+            Invia un evento firmato HMAC all&apos;API fornitori.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -172,9 +172,7 @@ export default function DemoPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="eventId">
-                Event ID (opzionale — riusa lo stesso per testare i duplicati)
-              </Label>
+              <Label htmlFor="eventId">Event ID (opzionale)</Label>
               <Input
                 id="eventId"
                 name="eventId"
@@ -182,26 +180,26 @@ export default function DemoPage() {
                 className="font-mono"
               />
             </div>
-            <Button type="submit">Simula aggiornamento fornitore</Button>
+            <Button type="submit">Invia aggiornamento</Button>
           </Form>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Flusso dimostrativo</CardTitle>
+          <CardTitle>Come funziona</CardTitle>
         </CardHeader>
         <CardContent>
           <ol className="list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
-            <li>Seleziona un prodotto (es. Limited Edition Abstract 01).</li>
-            <li>Imposta quantità da 5 a 2.</li>
-            <li>Il pannello genera un evento firmato HMAC.</li>
+            <li>Seleziona il prodotto da aggiornare.</li>
+            <li>Imposta la nuova quantità disponibile.</li>
+            <li>ArtSync firma l&apos;evento con HMAC e lo invia all&apos;API.</li>
             <li>
-              Il backend valida, deduplica e sincronizza via adapter {mode}.
+              Il backend valida, deduplica e aggiorna l&apos;inventario Shopify.
             </li>
-            <li>Dashboard, Prodotti e Log si aggiornano con l&apos;esito.</li>
+            <li>Dashboard, Prodotti e Log mostrano l&apos;esito.</li>
             <li>
-              Rinvia lo stesso Event ID: viene riconosciuto come duplicato.
+              Lo stesso Event ID viene riconosciuto come duplicato.
             </li>
           </ol>
         </CardContent>

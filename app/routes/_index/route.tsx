@@ -1,11 +1,9 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { redirect } from "react-router";
-import { isMockMode } from "../../lib/config";
 
-export const loader = async (_args: LoaderFunctionArgs) => {
-  // In mock/demo mode jump straight into the admin dashboard.
-  if (isMockMode()) {
-    return redirect("/app");
-  }
-  return redirect("/app");
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  // Preserve shop/host/id_token (etc.) — dropping them blanks the embedded iframe.
+  const url = new URL(request.url);
+  const qs = url.searchParams.toString();
+  return redirect(qs ? `/app?${qs}` : "/app");
 };

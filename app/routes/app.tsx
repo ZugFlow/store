@@ -37,7 +37,7 @@ export default function App() {
   const data = useLoaderData<typeof loader>();
 
   const body = (
-    <AppShell mode={data.mode} shop={data.shop}>
+    <AppShell shop={data.shop}>
       <Outlet />
     </AppShell>
   );

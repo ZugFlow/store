@@ -78,7 +78,7 @@ export async function importProductsFromShopify(params: {
   shop: string;
   admin: GraphqlAdmin;
   supplierId: string;
-  /** When set, only import this SKU (e.g. ART-001). */
+  /** When set, only import this SKU (e.g. PET-001). */
   onlySku?: string;
 }): Promise<ImportProductsResult> {
   const supplier = await prisma.supplier.findFirst({

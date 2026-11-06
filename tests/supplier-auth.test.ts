@@ -12,7 +12,7 @@ function buildRequest(opts: {
   shop?: string;
 }) {
   const timestamp = opts.timestamp ?? new Date().toISOString();
-  const supplierId = opts.supplierId ?? "supplier-atelier-milano";
+  const supplierId = opts.supplierId ?? "supplier-petcare-nord";
   const secret = demoSecretFor(supplierId);
   const signature =
     opts.signature ?? signPayload(secret, timestamp, opts.body);

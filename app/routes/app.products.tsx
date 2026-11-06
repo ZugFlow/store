@@ -61,7 +61,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return {
       ok: false as const,
       message:
-        "Import da Shopify disponibile solo in ARTSync_MODE=live con app installata.",
+        "Import da Shopify non disponibile: app non collegata allo shop.",
     };
   }
 
@@ -153,7 +153,7 @@ export default function ProductsPage() {
                 <Input
                   id="onlySku"
                   name="onlySku"
-                  placeholder="ART-001"
+                  placeholder="PET-001"
                   className="font-mono"
                 />
               </div>

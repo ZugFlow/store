@@ -30,7 +30,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function Dashboard() {
-  const { stats, mode } = useLoaderData<typeof loader>();
+  const { stats } = useLoaderData<typeof loader>();
 
   const cards = [
     { label: "Fornitori", value: stats.suppliersConnected },
@@ -49,11 +49,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <PageHeader
         title="Dashboard"
-        description={
-          mode === "mock"
-            ? "Panoramica sincronizzazione inventari (dati simulati — nessuna chiamata Shopify reale)."
-            : "Panoramica sincronizzazione inventari."
-        }
+        description="Panoramica sincronizzazione inventari."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -77,7 +73,7 @@ export default function Dashboard() {
         <CardContent>
           {stats.recentEvents.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Nessun evento ancora. Usa la pagina Demo per simularne uno.
+              Nessun evento ancora. Invia un aggiornamento stock per iniziare.
             </p>
           ) : (
             <Table>
