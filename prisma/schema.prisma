@@ -1,0 +1,149 @@
+// ArtSync — Shopify Inventory Bridge
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+/// Shop-scoped supplier registry. mode=mock rows are simulation-only.
+model Supplier {
+  id              String   @id @default(cuid())
+  shop            String
+  externalId      String
+  name            String
+  status          String   @default("active") // active | inactive
+  mode            String   @default("mock") // mock | live
+  lastSyncAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  products    SupplierProductMapping[]
+  credentials SupplierCredential?
+  events      InventorySyncEvent[]
+  logs        InventorySyncLog[]
+
+  @@unique([shop, externalId])
+  @@index([shop])
+}
+
+model SupplierCredential {
+  id                String   @id @default(cuid())
+  supplierId        String   @unique
+  /// HMAC secret stored as base64. Never expose to the frontend.
+  secretHash        String
+  /// Preview only (last 4 chars) for admin UI.
+  secretLastFour    String
+  createdAt         DateTime @default(now())
+  rotatedAt         DateTime?
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+}
+
+model SupplierProductMapping {
+  id                   String   @id @default(cuid())
+  shop                 String
+  supplierId           String
+  sku                  String
+  productTitle         String
+  imageUrl             String?
+  shopifyVariantId     String?
+  shopifyInventoryItemId String?
+  shopifyLocationId    String?
+  supplierQuantity     Int      @default(0)
+  shopifyQuantity      Int      @default(0)
+  syncStatus           String   @default("pending") // pending | synced | failed | conflict
+  lastSyncedAt         DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@unique([shop, supplierId, sku])
+  @@index([shop, sku])
+  @@index([supplierId])
+}
+
+/// Inbound supplier events. Unique (shop, eventId) prevents duplicates.
+model InventorySyncEvent {
+  id                 String   @id @default(cuid())
+  shop               String
+  eventId            String
+  supplierId         String
+  sku                String
+  quantity           Int
+  eventTimestamp     DateTime
+  status             String   @default("received") // received | processing | succeeded | failed | duplicate | stale | rejected
+  attempts           Int      @default(0)
+  previousQuantity   Int?
+  newQuantity        Int?
+  errorMessage       String?
+  idempotencyKey     String?
+  rawPayload         String?
+  processedAt        DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  logs     InventorySyncLog[]
+
+  @@unique([shop, eventId])
+  @@index([shop, status])
+  @@index([supplierId, sku, eventTimestamp])
+}
+
+model InventorySyncLog {
+  id               String   @id @default(cuid())
+  shop             String
+  eventId          String?
+  syncEventId      String?
+  supplierId       String?
+  sku              String?
+  previousQuantity Int?
+  newQuantity      Int?
+  outcome          String // succeeded | failed | duplicate | stale | rejected | retry
+  message          String?
+  createdAt        DateTime @default(now())
+
+  supplier  Supplier?          @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  syncEvent InventorySyncEvent? @relation(fields: [syncEventId], references: [id], onDelete: SetNull)
+
+  @@index([shop, createdAt])
+  @@index([eventId])
+}
+
+/// Simulated Shopify inventory for mock mode (never touches real Shopify).
+model MockInventoryLevel {
+  id              String   @id @default(cuid())
+  shop            String
+  inventoryItemId String
+  locationId      String
+  available       Int      @default(0)
+  updatedAt       DateTime @updatedAt
+
+  @@unique([shop, inventoryItemId, locationId])
+}

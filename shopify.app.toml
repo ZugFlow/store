@@ -1,0 +1,31 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+# Linked to Dev Dashboard app "ArtSync" · org "Il mio negozio"
+# Dev store: artsync-demo.myshopify.com
+# Backup: shopify.app.toml.backup-pre-link
+
+client_id = "439097399ccb740773a262bc32003600"
+name = "ArtSync"
+application_url = "https://example.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+include_config_on_deploy = true
+
+[access_scopes]
+# https://shopify.dev/docs/api/usage/access-scopes
+scopes = "read_products,read_inventory,write_inventory,read_locations"
+
+[webhooks]
+api_version = "2026-10"
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/app/uninstalled"
+  topics = ["app/uninstalled"]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/app/scopes_update"
+  topics = ["app/scopes_update"]
+
+[auth]
+redirect_urls = [ "https://example.com/auth/callback" ]

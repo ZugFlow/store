@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+database.sqlite
+/prisma/dev.sqlite
+/prisma/dev.sqlite-journal
+
+# Shopify CLI local state
+.shopify/
+.shopify.lock
+shopify.app.*.toml
+!shopify.app.toml
+*.backup-pre-link
+.link-backup-timestamp
+
+# Build / tooling
+/.cache
+/build
+/dist
+/app/build
+/public/build/
+/public/_dev
+/app/public/build
+/extensions/*/dist
+.react-router/
+coverage/
+*.log
+.DS_Store
+
+# Editors / local AI tooling (not required for the app)
+.idea/
+.vscode/
+*.swp
+.claude/
+.cursor/
+.gemini/
+.mcp.json
+AGENTS.md
+CLAUDE.md
+.github/
