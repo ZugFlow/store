@@ -72,7 +72,7 @@ Details: [`ARCHITECTURE.md`](./ARCHITECTURE.md)
 ### Shopify Admin GraphQL (LIVE)
 
 - Auth: official React Router template session (`authenticate.admin` / `unauthenticated.admin`)
-- Scopes: `read_products`, `read_inventory`, `write_inventory`, `read_locations`
+- Scopes: `read_products`, `write_products`, `read_inventory`, `write_inventory`, `read_locations`
 - Mutation: `inventorySetQuantities` with required `changeFromQuantity` and `@idempotent(key: …)`
 - Absolute quantity updates only when the supplier mapping is the source of truth for that SKU/location
 
